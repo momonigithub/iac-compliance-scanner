@@ -1,62 +1,66 @@
-# 🛡️ IaC Compliance Scanner
+<div align="center">
+  <h1 align="center">🛡️ IaC Compliance Scanner</h1>
+  <p align="center"><strong>The Ultimate Automated Infrastructure-as-Code Security Auditing Tool</strong></p>
+  <p align="center">Scan, Aggregate, and Visualize your cloud security posture in seconds.</p>
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
-![Terraform](https://img.shields.io/badge/terraform-compatible-lightgrey)
-![Security](https://img.shields.io/badge/security-hardened-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+  <p align="center">
+    <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status">
+    <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="Python Version">
+    <img src="https://img.shields.io/badge/terraform-compatible-lightgrey" alt="Terraform">
+    <img src="https://img.shields.io/badge/security-hardened-orange" alt="Security">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  </p>
 
-> **The ultimate automated Infrastructure-as-Code (IaC) security auditing tool.** 
-> Scan, Aggregate, and Visualize your cloud security posture in seconds.
-
----
-
-## 📖 Table of Contents
-- [Overview](#-overview)
-- [How It Works](#-how-it-works)
-- [Features](#-features)
-- [Quick Start (The "Noob" Guide)](#-quick-start-the-noob-guide)
-- [Project Structure](#-project-structure)
-- [Custom Policies](#-custom-policies)
-- [Screenshots](#-screenshots)
-- [Troubleshooting](#-troubleshooting)
+  <p align="center">
+    <a href="#🚀-quick-start-the-noob-guide">🚀 Quick Start</a> • 
+    <a href="#💡-key-features">💡 Features</a> • 
+    <a href="#⚙️-how-it-works">⚙️ Workflow</a> • 
+    <a href="#🛠️-custom-policies">📖 Custom Rules</a>
+  </p>
+</div>
 
 ---
 
 ## 🌟 Overview
 
-The **IaC Compliance Scanner** is a dual-engine security tool that combines the power of [Checkov](https://github.com/bridgecrewio/checkov) and [tfsec](https://github.com/aquasecurity/tfsec) to identify misconfigurations in your Terraform code. It doesn't just find bugs; it tracks them over time in a local database and generates a stunning HTML dashboard to visualize your progress.
+The **IaC Compliance Scanner** is a professional dual-engine security tool that combines the power of [Checkov](https://github.com/bridgecrewio/checkov) and [tfsec](https://github.com/aquasecurity/tfsec). It doesn't just find vulnerabilities; it tracks your compliance history in a local SQLite database and generates a high-fidelity dashboard to visualize your security trends.
 
-### Why use this?
-*   **Prevent Data Leaks:** Catches open S3 buckets and wildcard IAM policies before they reach production.
-*   **Compliance Tracking:** See your security score improve over time with built-in trend graphs.
-*   **Custom Rules:** Includes specialized Python-based policies for AWS tag enforcement and HTTPS enforcement.
+| Component | Role | Benefit |
+| :--- | :--- | :--- |
+| 🧠 **Dual Engines** | Checkov + tfsec | 2x the detection coverage |
+| 🗄️ **History DB** | SQLite Aggregation | Track security score over time |
+| 📊 **Dashboard** | HTML5 + Chart.js | Stunning visual compliance reports |
+| 🛡️ **Custom Rules** | Python-based Policies | Business-specific security logic |
+
+---
+
+## 💡 Key Features
+
+*   ✅ **Multi-Engine Scanning** - Seamless integration of two industry-standard scanners.
+*   ✅ **Trend Analytics** - Historical data tracking to monitor your security progress.
+*   ✅ **Deep Customization** - Easily add your own Python-based security policies.
+*   ✅ **Zero Config** - Get up and running in minutes with sane defaults.
+*   ✅ **Local First** - All data stays on your machine in a lightweight SQLite database.
 
 ---
 
 ## ⚙️ How It Works
 
-```mermaid
-graph TD
-    A[Terraform Code] --> B{Scan Engine}
-    B -->|Checkov| C[JSON Findings]
-    B -->|tfsec| C
-    C --> D[Data Aggregator]
-    D --> E[(SQLite Database)]
-    E --> F[Report Generator]
-    F --> G[HTML Dashboard]
-    G --> H((Visual Security Score))
+```text
+┌────────────────┐      ┌────────────────┐      ┌────────────────┐
+│ Terraform Code │ ───→ │  Scan Engines  │ ───→ │ JSON Findings  │
+└────────────────┘      └──────┬─────────┘      └──────┬─────────┘
+                               │                       │
+                               ▼                       ▼
+                        ┌──────────────┐        ┌──────────────┐
+                        │ Custom Rules │        │ History DB   │
+                        └──────────────┘        └──────┬───────┘
+                                                       │
+                                                       ▼
+                                               ┌───────────────┐
+                                               │ HTML Dashboard│
+                                               └───────────────┘
 ```
-
----
-
-## ✨ Features
-
-- **Multi-Engine Scanning:** Uses both Checkov and tfsec for 2x the detection coverage.
-- **Automated Dashboard:** Generates a beautiful HTML report with Chart.js visualization.
-- **Historical Tracking:** Stores every scan in a local SQLite database (`scan_history.db`).
-- **Custom Security Policies:** Ready-to-use Python policies in `policies/custom_policies/`.
-- **Demo Mode:** Seed your history with a single command to see what a "perfect" trend looks like.
 
 ---
 
@@ -98,7 +102,15 @@ python scanner/report.py
 ```
 
 ### 5. View the Results
-Go to the `reports/` folder and open the latest `.html` file in your favorite browser (Chrome/Edge/Firefox). **Boom! You have a security dashboard.**
+Go to the `reports/` folder and open the latest `.html` file in your favorite browser.
+
+---
+
+## 🛠️ Custom Policies
+
+Extend the scanner with your own logic in `policies/custom_policies/`:
+*   **Tag Enforcement:** Ensure every resource has mandatory Environment/Owner tags.
+*   **Encryption Check:** Verify S3 buckets have mandatory SSE-S3 or SSE-KMS enabled.
 
 ---
 
@@ -111,46 +123,24 @@ Go to the `reports/` folder and open the latest `.html` file in your favorite br
 │   └── custom_policies/  # Your custom Python security rules
 ├── reports/              # HTML dashboards and raw JSON results
 ├── scanner/
-│   ├── scan.py           # The "Brain" (runs the tools)
-│   ├── aggregate.py      # The "Memory" (database manager)
-│   └── report.py         # The "Artist" (HTML generator)
-├── terraform/            # Sample scan targets
-│   ├── insecure/         # Intentionally vulnerable code
-│   └── secure/           # Hardened, compliant code
-├── Makefile              # Automation shortcuts
-└── requirements.txt      # Python dependencies
+│   ├── scan.py           # Core scanner logic
+│   ├── aggregate.py      # Database aggregator
+│   └── report.py         # Dashboard generator
+├── terraform/            # Sample scan targets (secure/insecure)
+└── Makefile              # Task automation
 ```
-
----
-
-## 🛠️ Custom Policies
-
-We've included custom policies to show you how to extend the scanner:
-1.  **CKV_CUSTOM_1:** Enforces `Environment`, `Owner`, and `Project` tags on all AWS resources.
-2.  **CKV_CUSTOM_2:** Enforces HTTPS-only access for S3 buckets.
-
-Edit these in `policies/custom_policies/` to fit your company's needs!
 
 ---
 
 ## ❓ Troubleshooting
 
-**Q: "Command not found" for python?**
-A: Try using `python3` instead of `python`.
-
-**Q: No passed checks are showing up?**
-A: Ensure your `terraform/secure/` directory contains valid `.tf` files. The scanner is very strict!
-
-**Q: The dashboard is empty?**
-A: You must run `python scanner/scan.py` at least once before running `python scanner/report.py`.
+*   **"Command not found" for python?** Use `python3` instead.
+*   **No passed checks?** Ensure `terraform/secure/` is populated correctly.
+*   **Empty Dashboard?** Run `scan.py` before `report.py`.
 
 ---
 
-## 🤝 Contributing
-Feel free to fork this project and submit Pull Requests! 
-
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-*Made with ❤️ for Cloud Security Engineers.*
+<div align="center">
+  <p>Distributed under the MIT License.</p>
+  <p><i>Made with ❤️ for Cloud Security Engineers.</i></p>
+</div>
