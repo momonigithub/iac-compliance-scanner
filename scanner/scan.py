@@ -20,33 +20,53 @@ REPORTS_DIR  = ROOT / "reports"
 
 
 def _tool_available(name: str) -> bool:
-    return shutil.which(name) is not None
+    if shutil.which(name):
+        return True
+    # Check local root for .exe on Windows
+    if sys.platform == "win32":
+        local_exe = ROOT / f"{name}.exe"
+        if local_exe.exists():
+            return True
+    return False
 
 
 def _run(cmd: list[str], label: str) -> dict:
+    # Resolve tool path if it's a known local tool
+    tool = cmd[0]
+    if not shutil.which(tool) and sys.platform == "win32":
+        local_exe = ROOT / f"{tool}.exe"
+        if local_exe.exists():
+            cmd[0] = str(local_exe)
+
     print(f"  ▶ {label} …", flush=True)
     try:
-        # Windows compatibility: append .cmd or .exe if needed, but subprocess usually handles it if shell=False and executable is in PATH
-        # checkov and tfsec might need shell=True on Windows if they are .cmd files
         is_windows = sys.platform == "win32"
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
             timeout=120,
-            shell=is_windows # Enable shell on Windows to find .cmd files like checkov
+            shell=is_windows and not cmd[0].endswith(".exe") # Only use shell for .cmd/.bat
         )
         raw = result.stdout.strip()
         if not raw:
-            print(f"    ✗ {label} produced no output (stderr: {result.stderr[:200]})")
-            return {"error": result.stderr[:500], "raw": ""}
+            if result.stderr:
+                print(f"    ⚠ {label} stderr: {result.stderr[:200]}")
+            return {"error": "no_output"}
+        
+        # Robust JSON extraction: Find first { and last }
+        try:
+            start = raw.find("{")
+            end = raw.rfind("}") + 1
+            if start != -1 and end > start:
+                json_part = raw[start:end]
+                return json.loads(json_part)
+        except: pass
+
         return json.loads(raw)
     except json.JSONDecodeError as e:
-        print(f"    ✗ JSON parse error from {label}: {e}")
-        return {"error": str(e), "raw": result.stdout[:500]}
-    except subprocess.TimeoutExpired:
-        print(f"    ✗ {label} timed out")
-        return {"error": "timeout"}
+        print(f"    ✗ JSON parse error from {label}")
+        return {"error": "json_parse_error", "raw": result.stdout[:500]}
     except Exception as e:
         print(f"    ✗ {label} failed: {e}")
         return {"error": str(e)}
@@ -82,14 +102,45 @@ def run_tfsec(tf_dir: Path) -> dict:
 
 
 def normalize_checkov(raw: dict, tf_dir: Path) -> list[dict]:
-    if raw.get("skipped") or raw.get("error"):
-        return []
-
     findings = []
+    
+    # Handle direct tool errors (like tool not found or crash)
+    if raw.get("error"):
+        findings.append({
+            "tool":       "checkov",
+            "check_id":   "ENGINE_ERROR",
+            "check_name": f"Checkov Engine Error: {raw.get('error')}",
+            "severity":   "CRITICAL",
+            "passed":     False,
+            "resource":   "Engine",
+            "file":       "N/A",
+            "line_start": 0, "line_end": 0,
+            "module":     tf_dir.name,
+            "guideline":  "",
+        })
+        return findings
+
     summaries = raw if isinstance(raw, list) else [raw]
 
     for summary in summaries:
+        # Check for Parsing Errors (HCL Syntax)
         results = summary.get("results", {})
+        p_errors = results.get("parsing_errors", [])
+        for err_file in p_errors:
+            findings.append({
+                "tool":       "checkov",
+                "check_id":   "SYNTAX_ERROR",
+                "check_name": f"Syntax Error in {Path(err_file).name}. Check for missing brackets or typos.",
+                "severity":   "CRITICAL",
+                "passed":     False,
+                "resource":   "Parser",
+                "file":       str(err_file),
+                "line_start": 1, "line_end": 1,
+                "module":     tf_dir.name,
+                "guideline":  "",
+            })
+
+        # Normal Checks
         for status in ("failed_checks", "passed_checks"):
             passed = status == "passed_checks"
             for check in results.get(status, []):
@@ -100,8 +151,7 @@ def normalize_checkov(raw: dict, tf_dir: Path) -> list[dict]:
                     "severity":   _checkov_severity(check.get("check_id", "")),
                     "passed":     passed,
                     "resource":   check.get("resource", ""),
-                    "file":       check.get("repo_file_path",
-                                   check.get("file_path", "")),
+                    "file":       check.get("repo_file_path", check.get("file_path", "")),
                     "line_start": check.get("file_line_range", [0, 0])[0],
                     "line_end":   check.get("file_line_range", [0, 0])[-1],
                     "module":     tf_dir.name,
@@ -154,22 +204,43 @@ def scan(tf_dirs: list[Path]) -> dict:
     all_findings: list[dict] = []
 
     for tf_dir in tf_dirs:
-        if not tf_dir.is_dir():
-            print(f"  ✗ Directory not found: {tf_dir}")
-            continue
-
+        # Check if dir exists
+        is_real_dir = tf_dir.is_dir()
+        
         print(f"\n{'─'*50}")
         try:
-            print(f"  Scanning: {tf_dir.relative_to(ROOT)}")
-        except ValueError:
-            print(f"  Scanning: {tf_dir}")
+            label = tf_dir.relative_to(ROOT)
+        except:
+            label = tf_dir.name
+        print(f"  Scanning: {label}")
         print(f"{'─'*50}")
 
         ck_raw  = run_checkov(tf_dir)
         tf_raw  = run_tfsec(tf_dir)
 
-        all_findings.extend(normalize_checkov(ck_raw, tf_dir))
-        all_findings.extend(normalize_tfsec(tf_raw, tf_dir))
+        ck_findings = normalize_checkov(ck_raw, tf_dir)
+        tf_findings = normalize_tfsec(tf_raw, tf_dir)
+
+        # FOOL-PROOF: If both tools failed to find anything but returned errors, capture them
+        if not ck_findings and ck_raw.get("error"):
+            ck_findings = normalize_checkov(ck_raw, tf_dir) # Should hit the ENGINE_ERROR logic
+        
+        if not tf_findings and tf_raw.get("error"):
+             tf_findings.append({
+                "tool":       "tfsec",
+                "check_id":   "ENGINE_ERROR",
+                "check_name": f"tfsec Engine Error: {tf_raw.get('error')}",
+                "severity":   "CRITICAL",
+                "passed":     False,
+                "resource":   "Engine",
+                "file":       "N/A",
+                "line_start": 0, "line_end": 0,
+                "module":     tf_dir.name,
+                "guideline":  "",
+            })
+
+        all_findings.extend(ck_findings)
+        all_findings.extend(tf_findings)
 
     passed  = [f for f in all_findings if f["passed"]]
     failed  = [f for f in all_findings if not f["passed"]]

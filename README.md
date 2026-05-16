@@ -1,20 +1,20 @@
 <div align="center">
-  <h1 align="center">🛡️ IaC Compliance Scanner</h1>
-  <p align="center"><strong>The Ultimate Automated Infrastructure-as-Code Security Auditing Tool</strong></p>
-  <p align="center">Scan, Aggregate, and Visualize your cloud security posture in seconds.</p>
+  <h1 align="center">🛡️ IaC Compliance Scanner Platform</h1>
+  <p align="center"><strong>Premium Infrastructure-as-Code Security Auditing & Visualization</strong></p>
+  <p align="center">A high-fidelity DevSecOps platform for scanning, aggregating, and visualizing cloud security posture.</p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status">
-    <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="Python Version">
-    <img src="https://img.shields.io/badge/terraform-compatible-lightgrey" alt="Terraform">
-    <img src="https://img.shields.io/badge/security-hardened-orange" alt="Security">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+    <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js">
+    <img src="https://img.shields.io/badge/FastAPI-0.100%2B-05998b?logo=fastapi" alt="FastAPI">
+    <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python" alt="Python">
+    <img src="https://img.shields.io/badge/Terraform-1.0%2B-7b42bc?logo=terraform" alt="Terraform">
+    <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
   </p>
 
   <p align="center">
-    <a href="#🚀-quick-start-the-noob-guide">🚀 Quick Start</a> • 
-    <a href="#💡-key-features">💡 Features</a> • 
-    <a href="#⚙️-how-it-works">⚙️ Workflow</a> • 
+    <a href="#🚀-quick-start">🚀 Quick Start</a> • 
+    <a href="#✨-key-features">✨ Features</a> • 
+    <a href="#⚙️-architecture">⚙️ Architecture</a> • 
     <a href="#🛠️-custom-policies">📖 Custom Rules</a>
   </p>
 </div>
@@ -23,120 +23,107 @@
 
 ## 🌟 Overview
 
-The **IaC Compliance Scanner** is a professional dual-engine security tool that combines the power of [Checkov](https://github.com/bridgecrewio/checkov) and [tfsec](https://github.com/aquasecurity/tfsec). It doesn't just find vulnerabilities; it tracks your compliance history in a local SQLite database and generates a high-fidelity dashboard to visualize your security trends.
+The **IaC Compliance Scanner Platform** is a professional-grade security tool that orchestrates multiple scanning engines (**Checkov** & **tfsec**) to protect your cloud infrastructure. It features a stunning **Liquid Glass** interactive dashboard, real-time 3D infrastructure visualization, and a secure **Monaco-powered sandbox** for testing code on-the-fly.
 
-| Component | Role | Benefit |
+| Component | Technology | Role |
 | :--- | :--- | :--- |
-| 🧠 **Dual Engines** | Checkov + tfsec | 2x the detection coverage |
-| 🗄️ **History DB** | SQLite Aggregation | Track security score over time |
-| 📊 **Dashboard** | HTML5 + Chart.js | Stunning visual compliance reports |
-| 🛡️ **Custom Rules** | Python-based Policies | Business-specific security logic |
+| 🎨 **Frontend** | Next.js 15 + R3F | High-fidelity 3D interactive UI |
+| ⚡ **Backend** | FastAPI | High-performance analysis orchestration |
+| 🧠 **Engines** | Checkov + tfsec | Dual-engine SAST coverage |
+| 🗄️ **Memory** | SQLite | Historical trend & compliance tracking |
+| 🧪 **Sandbox** | Monaco Editor | Isolated user-input analysis environment |
 
 ---
 
-## 💡 Key Features
+## ✨ Key Features
 
-*   ✅ **Multi-Engine Scanning** - Seamless integration of two industry-standard scanners.
-*   ✅ **Trend Analytics** - Historical data tracking to monitor your security progress.
-*   ✅ **Deep Customization** - Easily add your own Python-based security policies.
-*   ✅ **Zero Config** - Get up and running in minutes with sane defaults.
-*   ✅ **Local First** - All data stays on your machine in a lightweight SQLite database.
+*   ✅ **Dual-Engine SAST** - Simultaneous scanning with Checkov and tfsec for maximum detection.
+*   ✅ **Interactive 3D Mesh** - Real-time WebGL visualization of infrastructure vulnerabilities.
+*   ✅ **Liquid Glass UI** - Premium, modern aesthetic inspired by `oryzo.ai`.
+*   ✅ **Secure Sandbox** - Paste Terraform code directly into a Monaco-powered IDE for instant evaluation.
+*   ✅ **Historical Trends** - Track your compliance score over time with persistence in a local DB.
+*   ✅ **Custom Python Policies** - Extend the platform with business-specific security logic.
 
 ---
 
-## ⚙️ How It Works
+## ⚙️ Architecture
 
-```text
-┌────────────────┐      ┌────────────────┐      ┌────────────────┐
-│ Terraform Code │ ───→ │  Scan Engines  │ ───→ │ JSON Findings  │
-└────────────────┘      └──────┬─────────┘      └──────┬─────────┘
-                               │                       │
-                               ▼                       ▼
-                        ┌──────────────┐        ┌──────────────┐
-                        │ Custom Rules │        │ History DB   │
-                        └──────────────┘        └──────┬───────┘
-                                                       │
-                                                       ▼
-                                               ┌───────────────┐
-                                               │ HTML Dashboard│
-                                               └───────────────┘
+```mermaid
+graph TD
+    User[User / Developer] -->|Paste Code| Sandbox[Monaco Sandbox]
+    User -->|View Report| Dashboard[Next.js Dashboard]
+    
+    subgraph "Frontend (Next.js 15)"
+        Dashboard
+        Sandbox
+        Mesh[3D Infrastructure Mesh]
+    end
+    
+    Dashboard <-->|REST API| API[FastAPI Backend]
+    Sandbox -->|POST /api/scan/custom| API
+    
+    subgraph "Backend Core"
+        API -->|Orchestrate| Core[Scan Core]
+        Core -->|Parse| AST[Checkov AST]
+        Core -->|Scan| TFSEC[tfsec Rego]
+        Core -->|Evaluate| Custom[Custom Python Rules]
+    end
+    
+    API -->|Query| DB[(SQLite History DB)]
 ```
 
 ---
 
 ## 🚀 Quick Start (The "Noob" Guide)
 
-Follow these steps exactly to get the scanner running on your machine.
-
 ### 1. Prerequisites
-*   **Python:** Install [Python 3.9+](https://www.python.org/downloads/). (Check with `python --version`)
-*   **Git:** Install [Git](https://git-scm.com/downloads).
+*   **Python:** Install [Python 3.11+](https://www.python.org/downloads/).
+*   **Node.js:** Install [Node.js 20+](https://nodejs.org/).
+*   **tfsec:** Download the [tfsec binary](https://github.com/aquasecurity/tfsec/releases) and place it in the root directory as `tfsec.exe`.
 
-### 2. Installation
-Open your terminal (Command Prompt or PowerShell on Windows) and run:
+### 2. Installation & Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/momonigithub/iac-compliance-scanner.git
 cd iac-compliance-scanner
 
-# Install the required Python packages
+# Install Backend Dependencies
 pip install -r requirements.txt
+
+# Install Frontend Dependencies
+cd frontend
+npm install --legacy-peer-deps
 ```
 
-### 3. Setup Scanning Tools
-*   **Checkov:** Installed automatically via `pip`.
-*   **tfsec:** 
-    *   **Windows:** [Download tfsec.exe](https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-windows-amd64.exe) and place it in the project root folder.
-    *   **Linux/Mac:** `brew install tfsec` or `curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash`
+### 3. Launch the Platform
 
-### 4. Running your first Scan
-Perform the scan and generate the report with two simple commands:
+Open two terminal windows:
 
-```powershell
-# 1. Run the scan (Scans terraform/secure and terraform/insecure)
-python scanner/scan.py
-
-# 2. Generate the visual dashboard
-python scanner/report.py
+**Terminal 1 (Backend):**
+```bash
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8002
 ```
 
-### 5. View the Results
-Go to the `reports/` folder and open the latest `.html` file in your favorite browser.
+**Terminal 2 (Frontend):**
+```bash
+cd frontend
+npm run dev
+```
+
+### 4. Usage
+Access the dashboard at [**http://localhost:3000**](http://localhost:3000). 
+*   Click **"Run Audit"** to scan the local repository.
+*   Click **"Scan Custom Code"** to open the Monaco Sandbox.
+*   Click **"Full Report"** to see the interactive compliance overview.
 
 ---
 
 ## 🛠️ Custom Policies
 
-Extend the scanner with your own logic in `policies/custom_policies/`:
-*   **Tag Enforcement:** Ensure every resource has mandatory Environment/Owner tags.
-*   **Encryption Check:** Verify S3 buckets have mandatory SSE-S3 or SSE-KMS enabled.
-
----
-
-## 📂 Project Structure
-
-```text
-.
-├── db/                   # SQLite database (scan history)
-├── policies/
-│   └── custom_policies/  # Your custom Python security rules
-├── reports/              # HTML dashboards and raw JSON results
-├── scanner/
-│   ├── scan.py           # Core scanner logic
-│   ├── aggregate.py      # Database aggregator
-│   └── report.py         # Dashboard generator
-├── terraform/            # Sample scan targets (secure/insecure)
-└── Makefile              # Task automation
-```
-
----
-
-## ❓ Troubleshooting
-
-*   **"Command not found" for python?** Use `python3` instead.
-*   **No passed checks?** Ensure `terraform/secure/` is populated correctly.
-*   **Empty Dashboard?** Run `scan.py` before `report.py`.
+Extend the platform by adding Python rules in `policies/custom_policies/`:
+*   **CKV_CUSTOM_1:** Mandatory Environment/Owner tagging.
+*   **CKV_CUSTOM_2:** Enforces SecureTransport (HTTPS) for S3.
 
 ---
 

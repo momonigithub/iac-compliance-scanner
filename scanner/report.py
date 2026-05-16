@@ -85,31 +85,46 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
+  @import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
   :root {
-    --bg0:   #0b0d12;
-    --bg1:   #111420;
-    --bg2:   #171b28;
-    --bg3:   #1e2435;
-    --line:  #252d42;
-    --text0: #e2e6f0;
-    --text1: #8b95b0;
-    --text2: #525c78;
+    --bg0:   hsl(260, 87%, 3%);
+    --bg1:   hsl(260, 87%, 6%);
+    --bg2:   rgba(255, 255, 255, 0.02);
+    --bg3:   rgba(255, 255, 255, 0.05);
+    --line:  rgba(255, 255, 255, 0.1);
+    --text0: hsl(40, 6%, 95%);
+    --text1: rgba(255, 255, 255, 0.7);
+    --text2: rgba(255, 255, 255, 0.5);
     --green: #39d98a;
     --red:   #ff4d4d;
     --amber: #f5c518;
     --blue:  #4db8ff;
     --purple:#a78bfa;
-    --accent:#39d98a;
+    --accent: #8b5cf6;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--bg0);
     color: var(--text0);
-    font-family: 'DM Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     min-height: 100vh;
     overflow-x: hidden;
   }
+  h1, h2, h3, .eyebrow, .card-value {
+    font-family: 'General Sans', sans-serif !important;
+  }
+  .card, .chart-card, .table-wrap, .sev-pill {
+    background: rgba(255, 255, 255, 0.01);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px;
+  }
+
   body::before {
     content: '';
     position: fixed; inset: 0;
