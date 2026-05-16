@@ -1,0 +1,20 @@
+# Ignore Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Ignore Database
+db/*.db
+
+# Ignore Reports
+reports/*.json
+reports/*.html
+
+# Ignore binaries
+tfsec.exe
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

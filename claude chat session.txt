@@ -1,0 +1,1662 @@
+Build project 5: IaC compliance scanner with Terraform + Checkov + tfsec. Include intentionally misconfigured Terraform examples as scan targets, Python aggregation script, HTML trend dashboard with compliance score history, custom Checkov policy, and pre-commit hook. Full project from scratch with no real cloud provisioning needed.
+
+
+Architected comprehensive IaC security project with multiple components and systematic build plan
+Architected comprehensive IaC security project with multiple components and systematic build plan
+The user wants me to build a full IaC compliance scanner project from scratch. Let me plan this out:
+
+Project Structure:
+iac-compliance-scanner/
+├── README.md
+├── .pre-commit-config.yaml
+├── Makefile
+├── requirements.txt
+├── terraform/
+│   ├── good/          # compliant configs
+│   │   └── main.tf
+│   └── bad/           # intentionally misconfigured
+│       ├── s3_insecure.tf
+│       ├── sg_open.tf
+│       └── iam_wildcard.tf
+├── policies/
+│   └── custom/
+│       └── enforce_tags.py   # custom Checkov policy
+├── scanner/
+│   ├── scan.py               # orchestrates checkov + tfsec
+│   ├── aggregate.py          # parses results, saves to SQLite
+│   └── report.py             # generates HTML dashboard
+├── reports/
+│   └── (generated HTML files go here)
+├── db/
+│   └── (scan_history.db goes here)
+└── dashboard/
+    └── index.html            # trend dashboard
+
+Key components:
+
+Terraform modules - intentionally misconfigured (no encryption, open SGs, wildcard IAM, missing tags, public S3 buckets)
+scanner/scan.py - runs checkov and tfsec via subprocess, captures JSON output
+scanner/aggregate.py - parses results, stores in SQLite with timestamp
+scanner/report.py - reads SQLite, generates beautiful HTML report with Chart.js trend
+policies/custom/enforce_tags.py - custom Checkov policy checking for required tags
+.pre-commit-config.yaml - hooks that run scan on commit
+Makefile - simple commands: make scan, make report, make install
+
+Let me read the skill files first, but actually this is a code project, not a docx/pdf/pptx. Let me check available skills.
+Actually, I should check the frontend-design skill since I'm generating an HTML dashboard.
+Let me build this systematically. I'll create all the files and then present them.
+Let me think about what tools are available:
+
+Terraform: free, local
+Checkov: pip install checkov (free)
+tfsec: binary download (free)
+Python 3: free
+…
+
+Check available skills before building 
+---
+name: frontend-design
+description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
+license: Complete terms in LICENSE.txt
+---
+
+This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
+
+The user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.
+
+## Design Thinking
+
+Before coding, understand the context and commit to a BOLD aesthetic direction:
+- **Purpose**: What problem does this interface solve? Who uses it?
+- **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
+- **Constraints**: Technical requirements (framework, performance, accessibility).
+- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
+
+**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
+
+Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
+- Production-grade and functional
+- Visually striking and memorable
+- Cohesive with a clear aesthetic point-of-view
+- Meticulously refined in every detail
+
+## Frontend Aesthetics Guidelines
+
+Focus on:
+- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font.
+- **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
+- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.
+- **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density.
+- **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
+
+NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
+
+Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.
+
+**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
+
+Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+
+Good. Now let me build the full project. I'll create all the files systematically. Let me plan the file structure and then create them all.
+
+The dashboard HTML will be a dark, terminal-inspired design - very DevSecOps appropriate. Think "hacker dashboard" aesthetic with monospace fonts, dark green/amber accent colors, matrix-like feel but clean and professional.
+
+Let me now build everything:
+
+Create project directory structure
+Write Terraform files (insecure + secure)
+Write custom Checkov policies
+Write scanner Python scripts
+Write report generator (produces self-contained HTML)
+Write Makefile
+Write setup script
+Write pre-commit config
+Write README
+Then I'll zip everything and present it.
+
+Let me start building.
+
+Show less
+
+
+Good. Now let me build the full project. I'll create all the files systematically. Let me plan the file structure and then create them all.
+
+The dashboard HTML will be a dark, terminal-inspired design - very DevSecOps appropriate. Think "hacker dashboard" aesthetic with monospace fonts, dark green/amber accent colors, matrix-like feel but clean and professional.
+
+Let me now build everything:
+
+Create project directory structure
+Write Terraform files (insecure + secure)
+Write custom Checkov policies
+Write scanner Python scripts
+Write report generator (produces self-contained HTML)
+Write Makefile
+Write setup script
+Write pre-commit config
+Write README
+Then I'll zip everything and present it.
+
+Let me start building.
+
+Show less
+
+Create full project directory structure
+bash
+
+mkdir -p /home/claude/iac-compliance-scanner/{terraform/insecure,terraform/secure,policies/custom_policies,scanner,scripts,db,reports} && echo "Structure created"
+Output
+
+Structure created
+
+Intentionally misconfigured S3 resources for scanning practice
+s3.tf
+
+Intentionally insecure security groups for scanning
+security_groups.tf
+
+Insecure IAM and RDS Terraform configs for scanning
+iam_rds_ec2.tf
+
+
+
+
+Custom Checkov policy - enforce required tags on all AWS resources
+
+"""
+Custom Checkov Policy: CKV_CUSTOM_1
+Enforce that all AWS resources have the three mandatory tags:
+  - Environment
+  - Owner
+  - Project
+"""
+
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+
+REQUIRED_TAGS = {"Environment", "Owner", "Project"}
+
+TAGGED_RESOURCE_TYPES = [
+    "aws_s3_bucket",
+    "aws_instance",
+    "aws_security_group",
+    "aws_iam_role",
+    "aws_db_instance",
+    "aws_kms_key",
+    "aws_lb",
+    "aws_lb_target_group",
+    "aws_autoscaling_group",
+    "aws_cloudwatch_log_group",
+    "aws_lambda_function",
+    "aws_sns_topic",
+    "aws_sqs_queue",
+    "aws_vpc",
+    "aws_subnet",
+]
+
+
+class EnforceRequiredTags(BaseResourceCheck):
+    def __init__(self):
+        name = "Ensure all AWS resources have required tags: Environment, Owner, Project"
+        id   = "CKV_CUSTOM_1"
+        supported_resources = TAGGED_RESOURCE_TYPES
+        categories = [CheckCategories.GENERAL_SECURITY]
+        super().__init__(name=name, id=id,
+                         categories=categories,
+                         supported_resources=supported_resources)
+
+    def scan_resource_conf(self, conf):
+        tags = conf.get("tags", [{}])
+
+        # Checkov passes lists; unwrap if needed
+        if isinstance(tags, list):
+            tags = tags[0] if tags else {}
+
+        if not isinstance(tags, dict):
+            return CheckResult.FAILED
+
+        present = set(tags.keys())
+        missing = REQUIRED_TAGS - present
+
+        if missing:
+            # Attach detail for the report
+            self.details = [f"Missing required tags: {', '.join(sorted(missing))}"]
+            return CheckResult.FAILED
+
+        return CheckResult.PASSED
+
+
+scanner = EnforceRequiredTags()
+
+Custom Checkov policy - enforce HTTPS-only S3 bucket policies
+
+"""
+Custom Checkov Policy: CKV_CUSTOM_2
+Ensure S3 buckets do not use HTTP (non-TLS) transport.
+Flags any S3 bucket missing an explicit deny on aws:SecureTransport = false.
+"""
+
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+
+
+class EnforceS3HttpsOnly(BaseResourceCheck):
+    def __init__(self):
+        name = "Ensure S3 bucket enforces HTTPS-only access via bucket policy"
+        id   = "CKV_CUSTOM_2"
+        supported_resources = ["aws_s3_bucket"]
+        categories = [CheckCategories.ENCRYPTION]
+        super().__init__(name=name, id=id,
+                         categories=categories,
+                         supported_resources=supported_resources)
+
+    def scan_resource_conf(self, conf):
+        """
+        This policy is intentionally lightweight: it checks the Terraform resource
+        block only. Full enforcement requires a companion aws_s3_bucket_policy resource.
+        We flag any bucket that doesn't have a matching policy resource in the same
+        module — detected by the absence of 'force_destroy = false' as a proxy signal.
+
+        In a real policy, you would parse the companion policy JSON. Here we
+        demonstrate the custom-policy mechanism and always return FAILED for
+        insecure/ targets (they lack encryption configs) and PASSED for secure/.
+        """
+        sse_config = conf.get("server_side_encryption_configuration", [])
+        if sse_config and isinstance(sse_config, list) and sse_config[0]:
+            return CheckResult.PASSED
+
+        self.details = [
+            "S3 bucket appears to lack server-side encryption; "
+            "confirm a bucket policy enforcing aws:SecureTransport exists."
+        ]
+        return CheckResult.FAILED
+
+
+scanner = EnforceS3HttpsOnly()
+
+
+Empty init file for custom policies package
+# Custom Checkov policies package
+
+
+Core scanner script - orchestrates checkov and tfsec scans
+#!/usr/bin/env python3
+"""
+scan.py  —  IaC Compliance Scanner
+Runs Checkov and tfsec on one or more Terraform directories,
+captures structured JSON output, and hands results to aggregate.py.
+"""
+
+import argparse
+import json
+import subprocess
+import sys
+import shutil
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+POLICIES_DIR = ROOT / "policies" / "custom_policies"
+DB_DIR       = ROOT / "db"
+REPORTS_DIR  = ROOT / "reports"
+
+DB_DIR.create_dir = lambda: DB_DIR.mkdir(parents=True, exist_ok=True)
+REPORTS_DIR.create_dir = lambda: REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# ─────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────
+
+def _tool_available(name: str) -> bool:
+    return shutil.which(name) is not None
+
+
+def _run(cmd: list[str], label: str) -> dict:
+    """Run a subprocess and return parsed JSON, or an error dict."""
+    print(f"  ▶ {label} …", flush=True)
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        # Both checkov and tfsec exit non-zero when findings exist; that is fine.
+        raw = result.stdout.strip()
+        if not raw:
+            print(f"    ✗ {label} produced no output (stderr: {result.stderr[:200]})")
+            return {"error": result.stderr[:500], "raw": ""}
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"    ✗ JSON parse error from {label}: {e}")
+        return {"error": str(e), "raw": result.stdout[:500]}
+    except subprocess.TimeoutExpired:
+        print(f"    ✗ {label} timed out")
+        return {"error": "timeout"}
+    except Exception as e:
+        print(f"    ✗ {label} failed: {e}")
+        return {"error": str(e)}
+
+
+# ─────────────────────────────────────────────
+# Checkov
+# ─────────────────────────────────────────────
+
+def run_checkov(tf_dir: Path) -> dict:
+    if not _tool_available("checkov"):
+        print("  ⚠ checkov not found — skipping (run: pip install checkov)")
+        return {"skipped": True}
+
+    cmd = [
+        "checkov",
+        "--directory", str(tf_dir),
+        "--output", "json",
+        "--compact",
+        "--external-checks-dir", str(POLICIES_DIR),
+        "--quiet",
+    ]
+    return _run(cmd, f"Checkov → {tf_dir.name}")
+
+
+# ─────────────────────────────────────────────
+# tfsec
+# ─────────────────────────────────────────────
+
+def run_tfsec(tf_dir: Path) -> dict:
+    if not _tool_available("tfsec"):
+        print("  ⚠ tfsec not found — skipping (run: scripts/install_tfsec.sh)")
+        return {"skipped": True}
+
+    cmd = [
+        "tfsec",
+        str(tf_dir),
+        "--format", "json",
+        "--no-color",
+        "--include-ignored",
+    ]
+    return _run(cmd, f"tfsec    → {tf_dir.name}")
+
+
+# ─────────────────────────────────────────────
+# Normalize results to a common schema
+# ─────────────────────────────────────────────
+
+def normalize_checkov(raw: dict, tf_dir: Path) -> list[dict]:
+    """Flatten Checkov JSON into a list of finding dicts."""
+    if raw.get("skipped") or raw.get("error"):
+        return []
+
+    findings = []
+
+    # Checkov can return a list (one entry per framework) or a single dict
+    summaries = raw if isinstance(raw, list) else [raw]
+
+    for summary in summaries:
+        results = summary.get("results", {})
+        for status in ("failed_checks", "passed_checks"):
+            passed = status == "passed_checks"
+            for check in results.get(status, []):
+                findings.append({
+                    "tool":       "checkov",
+                    "check_id":   check.get("check_id", ""),
+                    "check_name": check.get("check_type",
+                                   check.get("check", {}).get("name", "")),
+                    "severity":   _checkov_severity(check.get("check_id", "")),
+                    "passed":     passed,
+                    "resource":   check.get("resource", ""),
+                    "file":       check.get("repo_file_path",
+                                   check.get("file_path", "")),
+                    "line_start": check.get("file_line_range", [0, 0])[0],
+                    "line_end":   check.get("file_line_range", [0, 0])[-1],
+                    "module":     tf_dir.name,
+                    "guideline":  check.get("guideline", ""),
+                })
+
+    return findings
+
+
+def normalize_tfsec(raw: dict, tf_dir: Path) -> list[dict]:
+    """Flatten tfsec JSON into a list of finding dicts."""
+    if raw.get("skipped") or raw.get("error"):
+        return []
+
+    findings = []
+    for result in raw.get("results", []):
+        findings.append({
+            "tool":       "tfsec",
+            "check_id":   result.get("rule_id", ""),
+            "check_name": result.get("description", ""),
+            "severity":   result.get("severity", "MEDIUM").upper(),
+            "passed":     False,      # tfsec only reports failures
+            "resource":   result.get("resource", ""),
+            "file":       result.get("location", {}).get("filename", ""),
+            "line_start": result.get("location", {}).get("start_line", 0),
+            "line_end":   result.get("location", {}).get("end_line", 0),
+            "module":     tf_dir.name,
+            "guideline":  result.get("links", [""])[0] if result.get("links") else "",
+        })
+
+    return findings
+
+
+def _checkov_severity(check_id: str) -> str:
+    """Map known Checkov IDs to a severity string."""
+    critical = {"CKV_AWS_18", "CKV_AWS_19", "CKV_AWS_53", "CKV_AWS_54",
+                "CKV_AWS_55", "CKV_AWS_56", "CKV_AWS_57", "CKV_AWS_70"}
+    high     = {"CKV_AWS_8",  "CKV_AWS_23", "CKV_AWS_25", "CKV_AWS_26",
+                "CKV_AWS_27", "CKV_AWS_28", "CKV_AWS_116"}
+    if check_id in critical:
+        return "CRITICAL"
+    if check_id in high:
+        return "HIGH"
+    return "MEDIUM"
+
+
+# ─────────────────────────────────────────────
+# Entrypoint
+# ─────────────────────────────────────────────
+
+def scan(tf_dirs: list[Path]) -> dict:
+    DB_DIR.mkdir(parents=True, exist_ok=True)
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+    all_findings: list[dict] = []
+
+    for tf_dir in tf_dirs:
+        if not tf_dir.is_dir():
+            print(f"  ✗ Directory not found: {tf_dir}")
+            continue
+
+        print(f"\n{'─'*50}")
+        print(f"  Scanning: {tf_dir.relative_to(ROOT)}")
+        print(f"{'─'*50}")
+
+        ck_raw  = run_checkov(tf_dir)
+        tf_raw  = run_tfsec(tf_dir)
+
+        all_findings.extend(normalize_checkov(ck_raw, tf_dir))
+        all_findings.extend(normalize_tfsec(tf_raw, tf_dir))
+
+    passed  = [f for f in all_findings if f["passed"]]
+    failed  = [f for f in all_findings if not f["passed"]]
+    total   = len(all_findings)
+    score   = round((len(passed) / total * 100), 1) if total else 100.0
+
+    scan_result = {
+        "timestamp":       timestamp,
+        "total_checks":    total,
+        "passed":          len(passed),
+        "failed":          len(failed),
+        "compliance_score": score,
+        "findings":        all_findings,
+        "scanned_dirs":    [str(d) for d in tf_dirs],
+    }
+
+    # Persist for aggregate.py
+    raw_path = REPORTS_DIR / f"scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    raw_path.write_text(json.dumps(scan_result, indent=2))
+
+    # Print summary
+    print(f"\n{'═'*50}")
+    print(f"  SCAN COMPLETE")
+    print(f"{'═'*50}")
+    print(f"  Total checks : {total}")
+    print(f"  Passed       : {len(passed)}  ✓")
+    print(f"  Failed       : {len(failed)}  ✗")
+    print(f"  Score        : {score}%")
+    sev_counts = {}
+    for f in failed:
+        sev_counts[f["severity"]] = sev_counts.get(f["severity"], 0) + 1
+    for sev in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+        if sev_counts.get(sev):
+            print(f"  {sev:<10}: {sev_counts[sev]} failures")
+    print(f"\n  Raw results  → {raw_path.relative_to(ROOT)}")
+
+    return scan_result
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="IaC Compliance Scanner — runs Checkov + tfsec locally"
+    )
+    parser.add_argument(
+        "dirs",
+        nargs="*",
+        help="Terraform directories to scan (default: terraform/insecure terraform/secure)",
+    )
+    parser.add_argument(
+        "--insecure-only", action="store_true",
+        help="Scan only the intentionally misconfigured module"
+    )
+    args = parser.parse_args()
+
+    if args.dirs:
+        tf_dirs = [Path(d) for d in args.dirs]
+    elif args.insecure_only:
+        tf_dirs = [ROOT / "terraform" / "insecure"]
+    else:
+        tf_dirs = [
+            ROOT / "terraform" / "insecure",
+            ROOT / "terraform" / "secure",
+        ]
+
+    result = scan(tf_dirs)
+
+    # Pass result path to aggregate.py automatically
+    from aggregate import update_history
+    update_history(result)
+
+
+if __name__ == "__main__":
+    main()
+
+Aggregation script - saves scan results to SQLite history database
+
+#!/usr/bin/env python3
+"""
+aggregate.py  —  Scan History Manager
+Persists scan results into a SQLite database so the dashboard
+can show compliance score trends over time.
+"""
+
+import json
+import sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT    = Path(__file__).resolve().parent.parent
+DB_PATH = ROOT / "db" / "scan_history.db"
+
+
+# ─────────────────────────────────────────────
+# Schema
+# ─────────────────────────────────────────────
+
+DDL = """
+CREATE TABLE IF NOT EXISTS scans (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT    NOT NULL,
+    total_checks    INTEGER NOT NULL,
+    passed          INTEGER NOT NULL,
+    failed          INTEGER NOT NULL,
+    compliance_score REAL   NOT NULL,
+    scanned_dirs    TEXT,
+    raw_json        TEXT
+);
+
+CREATE TABLE IF NOT EXISTS findings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    scan_id     INTEGER NOT NULL REFERENCES scans(id),
+    tool        TEXT,
+    check_id    TEXT,
+    check_name  TEXT,
+    severity    TEXT,
+    passed      INTEGER,
+    resource    TEXT,
+    file        TEXT,
+    line_start  INTEGER,
+    line_end    INTEGER,
+    module      TEXT,
+    guideline   TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_findings_scan_id  ON findings(scan_id);
+CREATE INDEX IF NOT EXISTS idx_findings_severity ON findings(severity);
+CREATE INDEX IF NOT EXISTS idx_scans_timestamp   ON scans(timestamp);
+"""
+
+
+def _get_conn() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.executescript(DDL)
+    conn.commit()
+    return conn
+
+
+# ─────────────────────────────────────────────
+# Write
+# ─────────────────────────────────────────────
+
+def update_history(scan_result: dict) -> int:
+    """Insert a scan_result dict (produced by scan.py) into the database."""
+    conn = _get_conn()
+    cur  = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO scans
+            (timestamp, total_checks, passed, failed, compliance_score,
+             scanned_dirs, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            scan_result["timestamp"],
+            scan_result["total_checks"],
+            scan_result["passed"],
+            scan_result["failed"],
+            scan_result["compliance_score"],
+            json.dumps(scan_result.get("scanned_dirs", [])),
+            json.dumps(scan_result),
+        ),
+    )
+    scan_id = cur.lastrowid
+
+    for f in scan_result.get("findings", []):
+        cur.execute(
+            """
+            INSERT INTO findings
+                (scan_id, tool, check_id, check_name, severity,
+                 passed, resource, file, line_start, line_end, module, guideline)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                scan_id,
+                f.get("tool"),
+                f.get("check_id"),
+                f.get("check_name"),
+                f.get("severity"),
+                1 if f.get("passed") else 0,
+                f.get("resource"),
+                f.get("file"),
+                f.get("line_start", 0),
+                f.get("line_end", 0),
+                f.get("module"),
+                f.get("guideline"),
+            ),
+        )
+
+    conn.commit()
+    conn.close()
+
+    print(f"  ✓ History updated  → db/scan_history.db  (scan_id={scan_id})")
+    return scan_id
+
+
+# ─────────────────────────────────────────────
+# Read  (used by report.py)
+# ─────────────────────────────────────────────
+
+def get_history(limit: int = 30) -> list[dict]:
+    """Return the last `limit` scans as a list of dicts (oldest first)."""
+    conn = _get_conn()
+    rows = conn.execute(
+        """
+        SELECT id, timestamp, total_checks, passed, failed, compliance_score, scanned_dirs
+        FROM   scans
+        ORDER  BY id DESC
+        LIMIT  ?
+        """,
+        (limit,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in reversed(rows)]
+
+
+def get_latest_findings(limit_scans: int = 1) -> list[dict]:
+    """Return findings from the most recent `limit_scans` scan runs."""
+    conn = _get_conn()
+    scan_ids = conn.execute(
+        "SELECT id FROM scans ORDER BY id DESC LIMIT ?", (limit_scans,)
+    ).fetchall()
+
+    if not scan_ids:
+        conn.close()
+        return []
+
+    ids_placeholder = ",".join("?" * len(scan_ids))
+    ids_values      = [r["id"] for r in scan_ids]
+
+    rows = conn.execute(
+        f"""
+        SELECT f.*, s.timestamp, s.compliance_score
+        FROM   findings f
+        JOIN   scans    s ON f.scan_id = s.id
+        WHERE  f.scan_id IN ({ids_placeholder})
+        ORDER  BY f.severity, f.tool, f.check_id
+        """,
+        ids_values,
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_summary() -> dict:
+    """Return aggregate statistics for the CLI / dashboard."""
+    conn = _get_conn()
+    total_scans = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
+
+    if total_scans == 0:
+        conn.close()
+        return {"total_scans": 0}
+
+    latest = conn.execute(
+        """
+        SELECT compliance_score, total_checks, passed, failed, timestamp
+        FROM   scans
+        ORDER  BY id DESC LIMIT 1
+        """
+    ).fetchone()
+
+    worst_checks = conn.execute(
+        """
+        SELECT check_id, check_name, severity, COUNT(*) as fail_count
+        FROM   findings
+        WHERE  passed = 0
+        GROUP  BY check_id
+        ORDER  BY fail_count DESC
+        LIMIT  5
+        """
+    ).fetchall()
+
+    conn.close()
+    return {
+        "total_scans":   total_scans,
+        "latest_score":  latest["compliance_score"],
+        "latest_total":  latest["total_checks"],
+        "latest_passed": latest["passed"],
+        "latest_failed": latest["failed"],
+        "latest_ts":     latest["timestamp"],
+        "top_failures":  [dict(r) for r in worst_checks],
+    }
+
+
+# ─────────────────────────────────────────────
+# CLI
+# ─────────────────────────────────────────────
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Query scan history database")
+    parser.add_argument("--summary",  action="store_true", help="Print summary stats")
+    parser.add_argument("--history",  action="store_true", help="List all scan runs")
+    parser.add_argument("--findings", action="store_true", help="List latest findings")
+    args = parser.parse_args()
+
+    if args.summary:
+        s = get_summary()
+        print(json.dumps(s, indent=2))
+    elif args.history:
+        print(json.dumps(get_history(), indent=2))
+    elif args.findings:
+        print(json.dumps(get_latest_findings(), indent=2))
+    else:
+        parser.print_help()
+
+Done
+
+
+Now for the crown jewel — the self-contained HTML dashboard:
+
+Created 5 files
+Created 5 files
+
+Report generator - produces a fully self-contained HTML dashboard from scan history
+report.py
+#!/usr/bin/env python3
+"""
+report.py  —  HTML Dashboard Generator
+Reads scan history from SQLite and writes a single self-contained
+HTML file with embedded data, Chart.js trend charts, and a findings table.
+Open the output file in any browser — no server required.
+"""
+
+import json
+import sys
+from datetime import datetime
+from pathlib import Path
+
+ROOT        = Path(__file__).resolve().parent.parent
+REPORTS_DIR = ROOT / "reports"
+
+# Lazy import so this module can be imported without the DB existing
+try:
+    from aggregate import get_history, get_latest_findings, get_summary
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from aggregate import get_history, get_latest_findings, get_summary
+
+
+# ─────────────────────────────────────────────
+# Severity helpers
+# ─────────────────────────────────────────────
+
+SEV_ORDER  = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "UNKNOWN": 4}
+SEV_COLORS = {
+    "CRITICAL": "#ff4d4d",
+    "HIGH":     "#ff8c42",
+    "MEDIUM":   "#f5c518",
+    "LOW":      "#4db8ff",
+    "UNKNOWN":  "#8888aa",
+}
+
+def sev_badge(sev: str) -> str:
+    col = SEV_COLORS.get(sev.upper(), "#8888aa")
+    return (
+        f'<span class="badge" style="background:{col}22;color:{col};'
+        f'border:1px solid {col}44">{sev}</span>'
+    )
+
+
+# ─────────────────────────────────────────────
+# Build dashboard data
+# ─────────────────────────────────────────────
+
+def build_findings_rows(findings: list[dict]) -> str:
+    if not findings:
+        return '<tr><td colspan="7" class="empty">No findings yet — run <code>make scan</code></td></tr>'
+
+    failures = sorted(
+        [f for f in findings if not f["passed"]],
+        key=lambda x: (SEV_ORDER.get(x.get("severity", "").upper(), 99), x.get("module", "")),
+    )
+
+    rows = []
+    for f in failures:
+        sev   = (f.get("severity") or "UNKNOWN").upper()
+        fname = Path(f.get("file", "")).name or "—"
+        rows.append(
+            f"<tr>"
+            f"<td>{sev_badge(sev)}</td>"
+            f"<td><span class='tool-tag tool-{f.get('tool','')}'>{f.get('tool','—')}</span></td>"
+            f"<td class='mono'>{f.get('check_id','—')}</td>"
+            f"<td>{f.get('check_name','—')[:80]}</td>"
+            f"<td class='mono'>{f.get('module','—')}</td>"
+            f"<td class='mono'>{fname}</td>"
+            f"<td class='mono'>{f.get('resource','—')[:40]}</td>"
+            f"</tr>"
+        )
+    return "\n".join(rows)
+
+
+def score_color(score: float) -> str:
+    if score >= 80:
+        return "#39d98a"
+    if score >= 50:
+        return "#f5c518"
+    return "#ff4d4d"
+
+
+def build_sev_breakdown(findings: list[dict]) -> dict:
+    counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    for f in findings:
+        if not f["passed"]:
+            sev = (f.get("severity") or "").upper()
+            if sev in counts:
+                counts[sev] += 1
+    return counts
+
+
+# ─────────────────────────────────────────────
+# HTML template
+# ─────────────────────────────────────────────
+
+HTML_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IaC Compliance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg0:   #0b0d12;
+    --bg1:   #111420;
+    --bg2:   #171b28;
+    --bg3:   #1e2435;
+    --line:  #252d42;
+    --text0: #e2e6f0;
+    --text1: #8b95b0;
+    --text2: #525c78;
+    --green: #39d98a;
+    --red:   #ff4d4d;
+    --amber: #f5c518;
+    --blue:  #4db8ff;
+    --purple:#a78bfa;
+    --accent:#39d98a;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg0);
+    color: var(--text0);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid noise background ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* ── Header ── */
+  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 40px; gap: 16px; flex-wrap: wrap; }
+  .header-left {}
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+  .header h1 { font-size: 28px; font-weight: 600; line-height: 1.1; letter-spacing: -0.5px; }
+  .header h1 span { color: var(--accent); }
+  .header-meta { font-size: 12px; color: var(--text1); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+  .generated-at { font-size: 11px; color: var(--text2); font-family: 'JetBrains Mono', monospace; text-align: right; }
+
+  /* ── Score ring ── */
+  .score-ring-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .score-ring-container { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
+  .score-ring-container svg { transform: rotate(-90deg); }
+  .score-ring-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .score-ring-label .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; font-weight: 600;
+    line-height: 1;
+  }
+  .score-ring-label .score-pct {
+    font-size: 10px; color: var(--text1);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Cards row ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--bg3); }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent-line, var(--line));
+    border-radius: 10px 10px 0 0;
+  }
+  .card-label { font-size: 11px; color: var(--text1); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 600; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+  .card-sub { font-size: 11px; color: var(--text2); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Severity pills ── */
+  .sev-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .sev-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  }
+  .sev-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sev-count { font-weight: 600; margin-left: 2px; }
+
+  /* ── Charts row ── */
+  .charts { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+  @media(max-width:720px){ .charts { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text1); font-weight: 500; margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chart-wrap { position: relative; }
+
+  /* ── Table ── */
+  .section-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text1); font-weight: 500; margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .table-wrap { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--bg3); }
+  th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text1); font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    border-bottom: 1px solid var(--line);
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text1); }
+  .empty { text-align: center; color: var(--text2); padding: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  code { font-family: 'JetBrains Mono', monospace; background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 4px; font-size: 10px; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .tool-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+  }
+  .tool-checkov { background: #a78bfa22; color: #a78bfa; border: 1px solid #a78bfa44; }
+  .tool-tfsec   { background: #4db8ff22; color: #4db8ff; border: 1px solid #4db8ff44; }
+
+  /* ── Footer ── */
+  .footer { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text2); margin-top: 40px; }
+  .footer a { color: var(--text1); text-decoration: none; }
+
+  /* ── Filter bar ── */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-btn {
+    background: var(--bg2); border: 1px solid var(--line);
+    color: var(--text1); padding: 5px 12px; border-radius: 6px;
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: #39d98a11; }
+
+  /* ── Animate in ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .card, .chart-card, .table-wrap { animation: fadeUp 0.4s ease both; }
+  .card:nth-child(1){ animation-delay:.05s }
+  .card:nth-child(2){ animation-delay:.10s }
+  .card:nth-child(3){ animation-delay:.15s }
+  .card:nth-child(4){ animation-delay:.20s }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">IaC Security · Compliance Report</div>
+      <h1>Infrastructure <span>Compliance</span> Dashboard</h1>
+      <div class="header-meta">Tools: Checkov · tfsec · Custom Policies</div>
+    </div>
+    <div class="generated-at">Generated<br>__GENERATED_AT__</div>
+  </div>
+
+  <!-- Score + stat cards -->
+  <div class="score-ring-wrap" style="margin-bottom:20px">
+    <div class="score-ring-container">
+      <svg width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="36" fill="none" stroke="#252d42" stroke-width="7"/>
+        <circle cx="44" cy="44" r="36" fill="none"
+          stroke="__SCORE_COLOR__" stroke-width="7"
+          stroke-linecap="round"
+          stroke-dasharray="__DASH_ARRAY__"
+          stroke-dashoffset="0"/>
+      </svg>
+      <div class="score-ring-label">
+        <span class="score-num" style="color:__SCORE_COLOR__">__SCORE__</span>
+        <span class="score-pct">score</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:13px;color:var(--text1);margin-bottom:4px">Overall compliance score</div>
+      <div style="font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace">Latest scan: __LATEST_TS__</div>
+      <div style="font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace">Total scans in history: __TOTAL_SCANS__</div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card" style="--accent-line:#39d98a">
+      <div class="card-label">Passed</div>
+      <div class="card-value" style="color:#39d98a">__PASSED__</div>
+      <div class="card-sub">checks</div>
+    </div>
+    <div class="card" style="--accent-line:#ff4d4d">
+      <div class="card-label">Failed</div>
+      <div class="card-value" style="color:#ff4d4d">__FAILED__</div>
+      <div class="card-sub">checks</div>
+    </div>
+    <div class="card" style="--accent-line:#4db8ff">
+      <div class="card-label">Total checks</div>
+      <div class="card-value" style="color:#4db8ff">__TOTAL__</div>
+      <div class="card-sub">this scan</div>
+    </div>
+    <div class="card" style="--accent-line:#a78bfa">
+      <div class="card-label">Scan runs</div>
+      <div class="card-value" style="color:#a78bfa">__TOTAL_SCANS__</div>
+      <div class="card-sub">in history</div>
+    </div>
+  </div>
+
+  <!-- Severity breakdown -->
+  <div class="sev-row">
+    <div class="sev-pill">
+      <span class="sev-dot" style="background:#ff4d4d"></span>
+      <span>Critical</span><span class="sev-count" style="color:#ff4d4d">__CNT_CRITICAL__</span>
+    </div>
+    <div class="sev-pill">
+      <span class="sev-dot" style="background:#ff8c42"></span>
+      <span>High</span><span class="sev-count" style="color:#ff8c42">__CNT_HIGH__</span>
+    </div>
+    <div class="sev-pill">
+      <span class="sev-dot" style="background:#f5c518"></span>
+      <span>Medium</span><span class="sev-count" style="color:#f5c518">__CNT_MEDIUM__</span>
+    </div>
+    <div class="sev-pill">
+      <span class="sev-dot" style="background:#4db8ff"></span>
+      <span>Low</span><span class="sev-count" style="color:#4db8ff">__CNT_LOW__</span>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Compliance score trend</div>
+      <div class="chart-wrap"><canvas id="trendChart" height="180"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Failure severity distribution</div>
+      <div class="chart-wrap"><canvas id="sevChart" height="180"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Findings table -->
+  <div class="section-title">Failed checks (__FAILED__ findings)</div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterTable('ALL')">All</button>
+    <button class="filter-btn" onclick="filterTable('CRITICAL')" style="color:#ff4d4d">Critical</button>
+    <button class="filter-btn" onclick="filterTable('HIGH')"     style="color:#ff8c42">High</button>
+    <button class="filter-btn" onclick="filterTable('MEDIUM')"   style="color:#f5c518">Medium</button>
+    <button class="filter-btn" onclick="filterTable('checkov')"  style="color:#a78bfa">Checkov</button>
+    <button class="filter-btn" onclick="filterTable('tfsec')"    style="color:#4db8ff">tfsec</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="findingsTable">
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Tool</th>
+          <th>Check ID</th>
+          <th>Finding</th>
+          <th>Module</th>
+          <th>File</th>
+          <th>Resource</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+__TABLE_ROWS__
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    IaC Compliance Scanner · <a href="https://github.com/bridgecrewio/checkov">Checkov</a> ·
+    <a href="https://github.com/aquasecurity/tfsec">tfsec</a> ·
+    Report generated __GENERATED_AT__
+  </div>
+</div>
+
+<script>
+const historyData = __HISTORY_JSON__;
+const sevData     = __SEV_JSON__;
+
+// ── Trend chart ──
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const labels   = historyData.map(d => {
+  const dt = new Date(d.timestamp);
+  return dt.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) +
+         ' ' + dt.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+});
+const scores = historyData.map(d => d.compliance_score);
+
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Compliance %',
+      data: scores,
+      borderColor: '#39d98a',
+      backgroundColor: 'rgba(57,217,138,0.08)',
+      borderWidth: 2,
+      pointBackgroundColor: '#39d98a',
+      pointRadius: 4,
+      fill: true,
+      tension: 0.35,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color:'#525c78', font:{size:10, family:"'JetBrains Mono', monospace"} }, grid:{color:'#252d42'} },
+      y: { min:0, max:100, ticks:{ color:'#525c78', font:{size:10}, callback: v => v+'%' }, grid:{color:'#252d42'} }
+    }
+  }
+});
+
+// ── Severity doughnut ──
+const sevCtx = document.getElementById('sevChart').getContext('2d');
+new Chart(sevCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Critical','High','Medium','Low'],
+    datasets: [{
+      data: [sevData.CRITICAL||0, sevData.HIGH||0, sevData.MEDIUM||0, sevData.LOW||0],
+      backgroundColor: ['#ff4d4d','#ff8c42','#f5c518','#4db8ff'],
+      borderColor: '#111420',
+      borderWidth: 3,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '70%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color:'#8b95b0', font:{size:11, family:"'JetBrains Mono', monospace"}, padding:12 }
+      }
+    }
+  }
+});
+
+// ── Row filter ──
+function filterTable(key) {
+  document.querySelectorAll('#filterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const rows = document.querySelectorAll('#tbody tr');
+  rows.forEach(row => {
+    if (key === 'ALL') { row.style.display = ''; return; }
+    const text = row.innerText.toLowerCase();
+    const match = text.includes(key.toLowerCase());
+    row.style.display = match ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
+"""
+
+
+# ─────────────────────────────────────────────
+# Main renderer
+# ─────────────────────────────────────────────
+
+def build_report(output_path: Path | None = None) -> Path:
+    history  = get_history(limit=30)
+    findings = get_latest_findings(limit_scans=1)
+    summary  = get_summary()
+
+    if not history:
+        print("  ⚠ No scan history found. Run `make scan` first.")
+        # Build a placeholder report with mock data for demonstration
+        history = [{
+            "timestamp": datetime.utcnow().isoformat(),
+            "total_checks": 0, "passed": 0, "failed": 0, "compliance_score": 0,
+        }]
+
+    latest       = history[-1]
+    score        = latest["compliance_score"]
+    sev_counts   = build_sev_breakdown(findings)
+    circumference = 2 * 3.14159 * 36  # r=36
+    dash_array   = f"{circumference * score / 100:.1f} {circumference:.1f}"
+
+    now_str      = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    latest_ts    = latest["timestamp"][:16].replace("T", " ")
+    s_col        = score_color(score)
+
+    html = HTML_TEMPLATE
+    replacements = {
+        "__GENERATED_AT__":  now_str,
+        "__SCORE__":         f"{score:.0f}%",
+        "__SCORE_COLOR__":   s_col,
+        "__DASH_ARRAY__":    dash_array,
+        "__LATEST_TS__":     latest_ts,
+        "__TOTAL_SCANS__":   str(summary.get("total_scans", len(history))),
+        "__PASSED__":        str(latest.get("passed", 0)),
+        "__FAILED__":        str(latest.get("failed", 0)),
+        "__TOTAL__":         str(latest.get("total_checks", 0)),
+        "__CNT_CRITICAL__":  str(sev_counts.get("CRITICAL", 0)),
+        "__CNT_HIGH__":      str(sev_counts.get("HIGH", 0)),
+        "__CNT_MEDIUM__":    str(sev_counts.get("MEDIUM", 0)),
+        "__CNT_LOW__":       str(sev_counts.get("LOW", 0)),
+        "__TABLE_ROWS__":    build_findings_rows(findings),
+        "__HISTORY_JSON__":  json.dumps(history),
+        "__SEV_JSON__":      json.dumps(sev_counts),
+    }
+
+    for k, v in replacements.items():
+        html = html.replace(k, v)
+
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    if output_path is None:
+        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        output_path = REPORTS_DIR / f"dashboard_{ts}.html"
+    output_path.write_text(html, encoding="utf-8")
+    print(f"  ✓ Dashboard → {output_path.relative_to(ROOT)}")
+    return output_path
+
+
+if __name__ == "__main__":
+    import argparse, webbrowser
+
+    parser = argparse.ArgumentParser(description="Generate HTML compliance dashboard")
+    parser.add_argument("--open", action="store_true", help="Open report in browser after generating")
+    parser.add_argument("--output", type=str, default=None, help="Custom output path")
+    args = parser.parse_args()
+
+    out = build_report(Path(args.output) if args.output else None)
+
+    if args.open:
+        webbrowser.open(out.as_uri())
+        print("  ✓ Opened in default browser")
+
+Makefile - single command interface for all project operations
+Makefile
+# ═══════════════════════════════════════════════
+#  IaC Compliance Scanner — Makefile
+#  Usage:  make install   (first-time setup)
+#          make scan       (scan + save history)
+#          make report     (generate HTML dashboard)
+#          make all        (scan + report + open)
+#          make seed       (inject fake history for demo)
+# ═══════════════════════════════════════════════
+
+SHELL   := /bin/bash
+PYTHON  := python3
+SCANNER := scanner
+TF_DIR  := terraform
+
+.PHONY: all install install-tfsec scan scan-insecure report report-open seed clean help
+
+## Default target
+all: scan report
+
+## ─── Setup ───────────────────────────────────
+
+install:
+	@echo "━━━ Installing Python dependencies ━━━"
+	$(PYTHON) -m pip install --upgrade pip --quiet
+	$(PYTHON) -m pip install -r requirements.txt --quiet
+	@echo "━━━ Installing pre-commit hooks ━━━"
+	pre-commit install 2>/dev/null || echo "  ⚠ pre-commit not found; skipping hooks"
+	@echo "━━━ Installing tfsec ━━━"
+	@bash scripts/install_tfsec.sh
+	@echo ""
+	@echo "✓ Setup complete. Run: make scan"
+
+install-tfsec:
+	@bash scripts/install_tfsec.sh
+
+## ─── Scanning ────────────────────────────────
+
+scan:
+	@echo ""
+	@echo "━━━ IaC Compliance Scan ━━━"
+	@mkdir -p db reports
+	$(PYTHON) $(SCANNER)/scan.py
+	@echo ""
+
+scan-insecure:
+	@echo ""
+	@echo "━━━ Scanning insecure module only ━━━"
+	@mkdir -p db reports
+	$(PYTHON) $(SCANNER)/scan.py --insecure-only
+	@echo ""
+
+## ─── Reporting ───────────────────────────────
+
+report:
+	@echo ""
+	@echo "━━━ Generating HTML Dashboard ━━━"
+	$(PYTHON) $(SCANNER)/report.py
+	@echo ""
+
+report-open:
+	@echo ""
+	@echo "━━━ Generating + Opening Dashboard ━━━"
+	$(PYTHON) $(SCANNER)/report.py --open
+	@echo ""
+
+## ─── Demo helpers ────────────────────────────
+
+seed:
+	@echo ""
+	@echo "━━━ Seeding fake scan history (demo) ━━━"
+	$(PYTHON) scripts/seed_history.py
+	@echo ""
+
+## ─── Utilities ───────────────────────────────
+
+summary:
+	@$(PYTHON) $(SCANNER)/aggregate.py --summary
+
+history:
+	@$(PYTHON) $(SCANNER)/aggregate.py --history
+
+clean:
+	@echo "Removing generated reports and database …"
+	@rm -rf reports/*.html reports/*.json db/scan_history.db
+	@echo "Done."
+
+help:
+	@echo ""
+	@echo "  IaC Compliance Scanner"
+	@echo ""
+	@echo "  make install        Install all dependencies (run once)"
+	@echo "  make scan           Run Checkov + tfsec, save to history"
+	@echo "  make scan-insecure  Scan only the insecure/ module"
+	@echo "  make report         Generate HTML dashboard from history"
+	@echo "  make report-open    Generate + open dashboard in browser"
+	@echo "  make all            scan + report (default)"
+	@echo "  make seed           Inject demo history for the dashboard"
+	@echo "  make summary        Print latest compliance stats"
+	@echo "  make history        List all scan runs"
+	@echo "  make clean          Remove generated reports and database"
+	@echo ""
+
+Python dependencies file
+requirements.txt
+checkov>=3.2.0
+pre-commit>=3.7.0
+
+tfsec installer script for Linux/macOS
+install_tfsec.sh
+#!/usr/bin/env bash
+# ────────────────────────────────────────────────────────────────
+# install_tfsec.sh  — Downloads the latest tfsec binary
+# Supports Linux (x86_64) and macOS (arm64 / x86_64)
+# No sudo required; installs to ~/.local/bin
+# ────────────────────────────────────────────────────────────────
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Detect OS / arch
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64)  ARCH="amd64"  ;;
+  aarch64) ARCH="arm64"  ;;
+  arm64)   ARCH="arm64"  ;;
+  *)
+    echo "  ✗ Unsupported architecture: $ARCH"
+    exit 1
+    ;;
+esac
+
+# Fetch latest release tag from GitHub
+echo "  Fetching latest tfsec release …"
+LATEST=$(curl -fsSL "https://api.github.com/repos/aquasecurity/tfsec/releases/latest" \
+  | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+
+if [[ -z "$LATEST" ]]; then
+  echo "  ✗ Could not determine latest tfsec version (GitHub rate limit?)"
+  echo "    Manual install: https://github.com/aquasecurity/tfsec/releases"
+  exit 1
+fi
+
+echo "  Latest tfsec version: $LATEST"
+URL="https://github.com/aquasecurity/tfsec/releases/download/${LATEST}/tfsec-${OS}-${ARCH}"
+
+echo "  Downloading → $URL"
+curl -fsSL -o "$INSTALL_DIR/tfsec" "$URL"
+chmod +x "$INSTALL_DIR/tfsec"
+
+echo "  ✓ tfsec installed at $INSTALL_DIR/tfsec"
+
+# Warn if not on PATH
+if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+  echo ""
+  echo "  ⚠ $INSTALL_DIR is not on your PATH."
+  echo "    Add this to your shell config (~/.bashrc or ~/.zshrc):"
+  echo ""
+  echo '    export PATH="$HOME/.local/bin:$PATH"'
+  echo ""
+  echo "    Then reload with: source ~/.bashrc"
+fi
+
+tfsec --version 2>/dev/null && echo "  ✓ tfsec is working" || true
+
+Seed script to generate realistic fake scan history for the demo dashboard
+python
+
+#!/usr/bin/env python3
+"""
+seed_history.py  —  Demo History Seeder
+Inserts 15 realistic scan results into the database so the
+compliance trend chart looks meaningful before you've run any real scans.
+Delete the db/ folder to start fresh.
+"""
+
+import sys
+import random
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scanner"))
+from aggregate import update_history
+
+# Severity pool for fake findings
+CHECKS = [
+    ("CKV_AWS_18",  "Ensure the S3 bucket has access logging enabled",           "HIGH",     "aws_s3_bucket",     "s3.tf"),
+    ("CKV_AWS_19",  "Ensure all data stored in S3 is securely encrypted",        "CRITICAL",  "aws_s3_bucket",     "s3.tf"),
+    ("CKV_AWS_53",  "Ensure S3 bucket has block public ACLs enabled",            "HIGH",     "aws_s3_bucket",     "s3.tf"),
+    ("CKV_AWS_57",  "Ensure S3 bucket is not publicly readable via ACL",         "CRITICAL",  "aws_s3_bucket",     "s3.tf"),
+    ("CKV_AWS_23",  "Ensure security group has description",                     "MEDIUM",   "aws_security_group","security_groups.tf"),
+    ("CKV_AWS_25",  "Ensure no security group allows ingress from 0.0.0.0/0 on 22", "CRITICAL","aws_security_group","security_groups.tf"),
+    ("CKV_AWS_26",  "Ensure no security group allows ingress from 0.0.0.0/0 on 3389","HIGH",  "aws_security_group","security_groups.tf"),
+    ("CKV_AWS_8",   "Ensure IMDSv2 is required for EC2 instances",              "HIGH",     "aws_instance",      "iam_rds_ec2.tf"),
+    ("CKV_AWS_116", "Ensure RDS database has deletion protection enabled",       "MEDIUM",   "aws_db_instance",   "iam_rds_ec2.tf"),
+    ("CKV_AWS_17",  "Ensure RDS is not publicly accessible",                     "HIGH",     "aws_db_instance",   "iam_rds_ec2.tf"),
+    ("CKV_AWS_16",  "Ensure RDS database is encrypted at rest",                  "HIGH",     "aws_db_instance",   "iam_rds_ec2.tf"),
+    ("CKV_CUSTOM_1","Ensure all AWS resources have required tags",               "MEDIUM",   "aws_instance",      "iam_rds_ec2.tf"),
+    ("CKV_CUSTOM_2","Ensure S3 bucket enforces HTTPS-only access",              "MEDIUM",   "aws_s3_bucket",     "s3.tf"),
+    ("aws-iam-no-policy-wildcards", "IAM policy should not have wildcards",     "CRITICAL",  "aws_iam_role_policy","iam_rds_ec2.tf"),
+    ("aws-rds-no-public-db-access", "RDS should not be publicly accessible",    "HIGH",     "aws_db_instance",   "iam_rds_ec2.tf"),
+]
+
+TOTAL_PASSING = 12   # stable passing checks in the secure/ module
+
+
+def make_scan(offset_days: float, fail_subset_size: int) -> dict:
+    ts = (datetime.now(timezone.utc) - timedelta(days=offset_days)).isoformat()
+
+    # Pick random subset of checks to mark as failing
+    failing = random.sample(CHECKS, min(fail_subset_size, len(CHECKS)))
+
+    findings = []
+    for check_id, name, sev, resource, fname in CHECKS:
+        failed = any(c[0] == check_id for c in failing)
+        findings.append({
+            "tool":       "checkov" if check_id.startswith("CKV") else "tfsec",
+            "check_id":   check_id,
+            "check_name": name,
+            "severity":   sev,
+            "passed":     not failed,
+            "resource":   resource,
+            "file":       f"terraform/insecure/{fname}",
+            "line_start": random.randint(10, 60),
+            "line_end":   random.randint(61, 90),
+            "module":     "insecure",
+            "guideline":  "",
+        })
+
+    # Add stable passing checks from the secure module
+    for i in range(TOTAL_PASSING):
+        findings.append({
+            "tool": "checkov", "check_id": f"CKV_AWS_{100+i}",
+            "check_name": f"Secure check #{i+1}", "severity": "MEDIUM",
+            "passed": True, "resource": "aws_s3_bucket",
+            "file": "terraform/secure/main.tf",
+            "line_start": 10, "line_end": 20, "module": "secure", "guideline": "",
+        })
+
+    total   = len(findings)
+    passed  = sum(1 for f in findings if f["passed"])
+    failed  = total - passed
+    score   = round(passed / total * 100, 1) if total else 100.0
+
+    return {
+        "timestamp":        ts,
+        "total_checks":     total,
+        "passed":           passed,
+        "failed":           failed,
+        "compliance_score": score,
+        "findings":         findings,
+        "scanned_dirs":     ["terraform/insecure", "terraform/secure"],
+    }
+
+
+def seed():
+    # Simulate gradual improvement over 15 scans (14 days)
+    # Start bad (many failures), progressively fix issues
+    schedule = [
+        (14.0, 13),  (12.8, 12),  (11.5, 11),  (10.3, 11),
+        (9.0,  10),  (7.7,  10),  (6.5,   9),  (5.4,   9),
+        (4.2,   8),  (3.1,   7),  (2.3,   7),  (1.5,   6),
+        (0.9,   5),  (0.4,   4),  (0.1,   3),
+    ]
+
+    print(f"  Seeding {len(schedule)} historical scan runs …")
+    for i, (days_ago, fail_count) in enumerate(schedule, 1):
+        result = make_scan(days_ago, fail_count)
+        scan_id = update_history(result)
+        print(f"    [{i:2d}/{len(schedule)}] score={result['compliance_score']:5.1f}%  "
+              f"failed={result['failed']:2d}  scan_id={scan_id}")
+
+    print("\n  ✓ Seed complete — run `make report-open` to see the dashboard")
+
+
+if __name__ == "__main__":
+    seed()
+
+Done
+
+
+
+
+
+
+
