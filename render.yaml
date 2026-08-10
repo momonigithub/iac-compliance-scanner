@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: iac-scanner-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free # Change if needed
+
+  - type: web
+    name: iac-scanner-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm run start
+    plan: free # Change if needed
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: iac-scanner-backend
+          envVarKey: RENDER_EXTERNAL_URL

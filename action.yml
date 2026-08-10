@@ -1,0 +1,27 @@
+name: 'IaC Compliance Scanner'
+description: 'Runs Checkov and tfsec on Terraform code and evaluates compliance'
+inputs:
+  directory:
+    description: 'The directory containing Terraform code to scan'
+    required: true
+    default: '.'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install checkov and tfsec
+      shell: bash
+      run: |
+        pip install checkov
+        sudo wget -qO /usr/local/bin/tfsec https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64
+        sudo chmod +x /usr/local/bin/tfsec
+      
+    - name: Run Scanner
+      shell: bash
+      run: |
+        # Run scan.py from the action's repository path
+        python ${{ github.action_path }}/scanner/scan.py ${{ inputs.directory }}
