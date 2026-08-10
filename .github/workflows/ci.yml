@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements.txt
           
       - name: Run Tests
-        run: pytest tests/
+        run: PYTHONPATH=. pytest tests/
 
   validate-frontend:
     runs-on: ubuntu-latest
