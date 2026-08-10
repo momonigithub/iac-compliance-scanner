@@ -102,7 +102,7 @@ function Connections({ nodes }: { nodes: any[] }) {
   );
 }
 
-export function InfrastructureMesh({ findings = [], isScanning = false }) {
+export function InfrastructureMesh({ findings = [], isScanning = false }: { findings?: any[], isScanning?: boolean }) {
   // Map real findings to 3D nodes if available, else use dummy data
   const nodes = useMemo(() => {
     const safeFindings = Array.isArray(findings) ? findings : [];
