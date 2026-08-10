@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { InfrastructureMesh } from "@/components/InfrastructureMesh";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002/api";
+const _envUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002";
+const API_URL = _envUrl.endsWith("/api") ? _envUrl : `${_envUrl}/api`;
 
 export default function Hero() {
   const [isScanning, setIsScanning] = useState(false);
